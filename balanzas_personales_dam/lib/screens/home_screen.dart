@@ -8,6 +8,7 @@ import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/confirmation_dialog.dart';
 import 'dashboard_screen.dart';
 import 'profile_screen.dart';
+import '../utils/cryp.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -23,7 +24,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadTransactions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTransactions();
+    });
   }
 
   Future<void> clearAllPreferences() async {
@@ -104,39 +107,69 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _saveTransactions() async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> txList =
+    final username = prefs.getString('username') ?? '';
+    final encodedKey = prefs.getString('key');
+
+    if (username.isEmpty || encodedKey == null) return;
+
+    final key = base64Decode(encodedKey);
+    final txList =
         _userTransactions
             .map(
               (tx) => jsonEncode({
                 'id': tx.id,
                 'title': tx.title,
+                'category': tx.category,
                 'amount': tx.amount,
                 'isIncome': tx.isIncome,
                 'date': tx.date.toIso8601String(),
               }),
             )
             .toList();
-    await prefs.setStringList('transactions', txList);
+
+    final encryptedData = base64Encode(
+      xorEncrypt(utf8.encode(jsonEncode(txList)), key),
+    );
+
+    await prefs.setString('tx_$username', encryptedData);
   }
 
   Future<void> _loadTransactions() async {
     final prefs = await SharedPreferences.getInstance();
-    final txList = prefs.getStringList('transactions') ?? [];
+    final username = prefs.getString('username') ?? '';
+    final encodedKey = prefs.getString('key');
 
-    setState(() {
-      _userTransactions =
-          txList.map((txString) {
-            final data = jsonDecode(txString);
-            return Transaction(
-              id: data['id'],
-              title: data['title'],
-              amount: data['amount'],
-              isIncome: data['isIncome'],
-              date: DateTime.parse(data['date']),
-            );
-          }).toList();
-    });
+    if (username.isEmpty || encodedKey == null) return;
+
+    final key = base64Decode(encodedKey);
+    final encryptedData = prefs.getString('tx_$username');
+
+    if (encryptedData == null) return;
+
+    try {
+      final decryptedBytes =xorEncrypt(base64Decode(encryptedData), key);
+      final List<dynamic> stringList = jsonDecode(utf8.decode(decryptedBytes));
+
+      setState(() {
+        _userTransactions =
+            stringList.map((txString) {
+              final Map<String, dynamic> map = jsonDecode(txString);
+              return Transaction(
+                id: map['id'],
+                title: map['title'],
+                category: map['category'],
+                amount: map['amount'].toDouble(),
+                isIncome: map['isIncome'],
+                date: DateTime.parse(map['date']),
+              );
+            }).toList();
+      });
+    } catch (e) {
+      print('❌ Error al descifrar: $e');
+    }
   }
+
+
 
   @override
   Widget build(BuildContext context) {

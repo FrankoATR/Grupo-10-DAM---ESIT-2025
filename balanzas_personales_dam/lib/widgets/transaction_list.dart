@@ -13,7 +13,6 @@ class TransactionList extends StatelessWidget {
     required this.onEdit,
   });
 
-
   @override
   Widget build(BuildContext context) {
     return transactions.isEmpty
@@ -56,15 +55,37 @@ class TransactionList extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          (isIncome ? '+ ' : '- ') +
-                              '\$${tx.amount.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
+
+                        Row(
+                          children: [
+                            Text(
+                              (isIncome ? '+ ' : '- ') +
+                                  '\$${tx.amount.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            if (tx.category.isNotEmpty) ...[
+                              const Icon(
+                                Icons.arrow_right_alt,
+                                color: Colors.white70,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                tx.category,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
+
                         Text(
                           DateFormat(
                             "d 'de' MMMM yyyy",

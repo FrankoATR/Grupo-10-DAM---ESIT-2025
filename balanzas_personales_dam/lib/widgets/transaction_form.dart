@@ -18,6 +18,7 @@ class TransactionForm extends StatefulWidget {
 
 class _TransactionFormState extends State<TransactionForm> {
   final _titleController = TextEditingController();
+  final _categoryController = TextEditingController();
   final _amountController = TextEditingController();
   String? _error;
   DateTime _selectedDate = DateTime.now();
@@ -27,6 +28,7 @@ class _TransactionFormState extends State<TransactionForm> {
     super.initState();
     if (widget.existingTransaction != null) {
       _titleController.text = widget.existingTransaction!.title;
+      _categoryController.text = widget.existingTransaction!.category;
       _amountController.text = widget.existingTransaction!.amount.toString();
       _selectedDate = widget.existingTransaction!.date;
     }
@@ -49,6 +51,7 @@ class _TransactionFormState extends State<TransactionForm> {
 
   void _submitData() {
     final enteredTitle = _titleController.text.trim();
+    final enteredCategory = _categoryController.text.trim();
     final enteredAmount = double.tryParse(_amountController.text.trim());
 
     if (enteredTitle.isEmpty || enteredAmount == null || enteredAmount == 0) {
@@ -63,6 +66,7 @@ class _TransactionFormState extends State<TransactionForm> {
     final newTransaction = Transaction(
       id: widget.existingTransaction?.id ?? DateTime.now().toString(),
       title: enteredTitle,
+      category: enteredCategory,
       amount: enteredAmount.abs(),
       isIncome: isIncome,
       date: _selectedDate,
@@ -103,6 +107,20 @@ class _TransactionFormState extends State<TransactionForm> {
             controller: _titleController,
             decoration: InputDecoration(
               hintText: 'Descripción',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Colors.deepPurple),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _categoryController,
+            decoration: InputDecoration(
+              hintText: 'Categoria (Opcional)',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
