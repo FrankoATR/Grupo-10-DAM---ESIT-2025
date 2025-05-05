@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../models/transaction.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import 'home_screen.dart';
+import 'profile_screen.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -328,6 +329,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => HomeScreen()),
+            );
+          }
+          if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ProfileScreen(transactions: widget.transactions)),
             );
           }
         },
