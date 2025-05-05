@@ -36,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final savedKey = allUsers[username];
 
     if (derivedKey == savedKey) {
-      await prefs.setString('username', username); // Set active user
+      await prefs.setString('username', username);
       await prefs.setString('key', savedKey!);
       Navigator.pushReplacement(
         context,

@@ -31,13 +31,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final prefs = await SharedPreferences.getInstance();
 
-    // Verificar si ya existe un usuario con ese nombre
     if (prefs.containsKey('user_$username')) {
       _showMessage('Ese nombre de usuario ya existe');
       return;
     }
 
-    // Derivar y guardar la clave para cifrado
     final key = deriveKey(password, username);
     final encodedKey = base64Encode(key);
 
