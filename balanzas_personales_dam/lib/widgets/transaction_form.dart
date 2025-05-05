@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import '../models/transaction.dart';
+import 'package:intl/intl.dart';
 
 class TransactionForm extends StatefulWidget {
   final Function(Transaction) onSubmit;
   final Transaction? existingTransaction;
 
-  TransactionForm({required this.onSubmit, this.existingTransaction});
+  const TransactionForm({
+    required this.onSubmit,
+    this.existingTransaction,
+    super.key,
+  });
 
   @override
-  _TransactionFormState createState() => _TransactionFormState();
+  State<TransactionForm> createState() => _TransactionFormState();
 }
 
 class _TransactionFormState extends State<TransactionForm> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
-  bool _isIncome = true;
+  String? _error;
 
   @override
   void initState() {
@@ -22,23 +27,27 @@ class _TransactionFormState extends State<TransactionForm> {
     if (widget.existingTransaction != null) {
       _titleController.text = widget.existingTransaction!.title;
       _amountController.text = widget.existingTransaction!.amount.toString();
-      _isIncome = widget.existingTransaction!.isIncome;
     }
   }
 
   void _submitData() {
-    final enteredTitle = _titleController.text;
-    final enteredAmount = double.tryParse(_amountController.text) ?? 0;
+    final enteredTitle = _titleController.text.trim();
+    final enteredAmount = double.tryParse(_amountController.text.trim());
 
-    if (enteredTitle.isEmpty || enteredAmount <= 0) {
+    if (enteredTitle.isEmpty || enteredAmount == null || enteredAmount == 0) {
+      setState(() {
+        _error = 'Por favor ingresa una cantidad válida diferente de cero.';
+      });
       return;
     }
+
+    final isIncome = enteredAmount > 0;
 
     final newTransaction = Transaction(
       id: widget.existingTransaction?.id ?? DateTime.now().toString(),
       title: enteredTitle,
-      amount: enteredAmount,
-      isIncome: _isIncome,
+      amount: enteredAmount.abs(),
+      isIncome: isIncome,
       date: DateTime.now(),
     );
 
@@ -48,30 +57,116 @@ class _TransactionFormState extends State<TransactionForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(16),
+    final isEditing = widget.existingTransaction != null;
+    final dateFormatted = DateFormat(
+      "d 'de' MMMM yyyy",
+      'es_ES',
+    ).format(DateTime.now());
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        30,
+        20,
+        MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          Text(
+            isEditing ? 'Actualizar dato' : 'Nueva dato',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 20),
           TextField(
             controller: _titleController,
-            decoration: InputDecoration(labelText: 'Descripción'),
+            decoration: InputDecoration(
+              hintText: 'Descripción',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Colors.deepPurple),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
           ),
+          const SizedBox(height: 12),
           TextField(
             controller: _amountController,
-            decoration: InputDecoration(labelText: 'Cantidad'),
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              hintText: 'Cantidad',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Colors.deepPurple),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
           ),
-          SwitchListTile(
-            title: Text(_isIncome ? 'Entrada (+)' : 'Salida (-)'),
-            value: _isIncome,
-            onChanged: (val) {
-              setState(() {
-                _isIncome = val;
-              });
-            },
+          const SizedBox(height: 8),
+          Text.rich(
+            TextSpan(
+              text: 'Fecha de creación: ',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+              children: [
+                TextSpan(
+                  text: dateFormatted,
+                  style: const TextStyle(fontWeight: FontWeight.normal),
+                ),
+              ],
+            ),
           ),
-          ElevatedButton(onPressed: _submitData, child: Text('Guardar')),
+          if (_error != null) ...[
+            const SizedBox(height: 6),
+            Text(_error!, style: const TextStyle(color: Colors.red)),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: _submitData,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF6400CD),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 24,
+                  ),
+                ),
+                child: Text(
+                  isEditing ? 'Actualizar' : 'Guardar',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFFF2D55),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 24,
+                  ),
+                ),
+                child: const Text(
+                  'Cancelar',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
