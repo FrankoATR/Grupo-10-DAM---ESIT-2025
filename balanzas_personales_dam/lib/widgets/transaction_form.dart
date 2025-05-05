@@ -20,6 +20,7 @@ class _TransactionFormState extends State<TransactionForm> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   String? _error;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -27,6 +28,22 @@ class _TransactionFormState extends State<TransactionForm> {
     if (widget.existingTransaction != null) {
       _titleController.text = widget.existingTransaction!.title;
       _amountController.text = widget.existingTransaction!.amount.toString();
+      _selectedDate = widget.existingTransaction!.date;
+    }
+  }
+
+  Future<void> _pickDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      locale: const Locale('es', 'ES'),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
     }
   }
 
@@ -48,7 +65,7 @@ class _TransactionFormState extends State<TransactionForm> {
       title: enteredTitle,
       amount: enteredAmount.abs(),
       isIncome: isIncome,
-      date: DateTime.now(),
+      date: _selectedDate,
     );
 
     widget.onSubmit(newTransaction);
@@ -61,7 +78,7 @@ class _TransactionFormState extends State<TransactionForm> {
     final dateFormatted = DateFormat(
       "d 'de' MMMM yyyy",
       'es_ES',
-    ).format(DateTime.now());
+    ).format(_selectedDate);
 
     return Container(
       decoration: const BoxDecoration(
@@ -111,18 +128,31 @@ class _TransactionFormState extends State<TransactionForm> {
             ),
           ),
           const SizedBox(height: 8),
-          Text.rich(
-            TextSpan(
-              text: 'Fecha de creación: ',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text.rich(
                 TextSpan(
-                  text: dateFormatted,
-                  style: const TextStyle(fontWeight: FontWeight.normal),
+                  text: 'Fecha de creación: ',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  children: [
+                    TextSpan(
+                      text: dateFormatted,
+                      style: const TextStyle(fontWeight: FontWeight.normal),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              TextButton(
+                onPressed: _pickDate,
+                child: const Text(
+                  'Cambiar',
+                  style: TextStyle(color: Colors.deepPurple),
+                ),
+              ),
+            ],
           ),
+
           if (_error != null) ...[
             const SizedBox(height: 6),
             Text(_error!, style: const TextStyle(color: Colors.red)),

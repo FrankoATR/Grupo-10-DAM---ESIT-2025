@@ -5,6 +5,7 @@ import '../widgets/transaction_form.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import 'dashboard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -50,6 +51,83 @@ class _HomeScreenState extends State<HomeScreen> {
       _userTransactions.removeWhere((tx) => tx.id == id);
     });
     _saveTransactions();
+  }
+
+  void _confirmDelete(String id) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 50),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Eliminar dato',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '¿Estás seguro de que deseas eliminar este dato?',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        _deleteTransaction(id);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF2C14DD),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 24,
+                        ),
+                      ),
+                      child: const Text(
+                        'Aceptar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFFF2D55),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 24,
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancelar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _openTransactionForm([Transaction? existingTransaction]) {
@@ -154,9 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
-            margin: const EdgeInsets.symmetric(
-              horizontal: 20,
-            ),
+            margin: const EdgeInsets.symmetric(horizontal: 20),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.deepPurple),
@@ -218,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 const SizedBox(height: 16),
-  
+
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -256,35 +332,78 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 20),
           Expanded(
-            child: TransactionList(
-              transactions: filteredTransactions,
-              onDelete: _deleteTransaction,
-              onEdit: _openTransactionForm,
-            ),
+            child:
+                filteredTransactions.isEmpty
+                    ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Vaya, esto está algo vacío;\nagreguemos algunos datos...',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        FloatingActionButton(
+                          onPressed: () => _openTransactionForm(),
+                          backgroundColor: Color(0xFF007AFF),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(
+                            Icons.add,
+                            size: 32,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    )
+                    : TransactionList(
+                      transactions: filteredTransactions,
+                      onDelete: _confirmDelete,
+                      onEdit: _openTransactionForm,
+                    ),
           ),
         ],
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0, right: 16.0),
-        child: SizedBox(
-          width: 70,
-          height: 70,
-          child: FloatingActionButton(
-            onPressed: () => _openTransactionForm(),
-            backgroundColor: Color(0xFF007AFF),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: const Icon(Icons.add, color: Colors.white, size: 32),
-          ),
-        ),
-      ),
+      floatingActionButton:
+          _userTransactions.isEmpty
+              ? null
+              : Padding(
+                padding: const EdgeInsets.only(bottom: 16.0, right: 16.0),
+                child: SizedBox(
+                  width: 70,
+                  height: 70,
+                  child: FloatingActionButton(
+                    onPressed: () => _openTransactionForm(),
+                    backgroundColor: Color(0xFF007AFF),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 32),
+                  ),
+                ),
+              ),
+
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
+
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) =>
+                        DashboardScreen(transactions: _userTransactions),
+              ),
+            );
+          }
         },
       ),
     );
