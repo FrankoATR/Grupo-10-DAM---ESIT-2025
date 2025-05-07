@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="balanzas_personales_dam"
+        android:label="FinanzasDAMSV"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

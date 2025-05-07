@@ -1,15 +1,10 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
-Uint8List deriveKey(String password, String salt, {int length = 32}) {
-  final key = pbkdf2(
-    password: password,
-    salt: utf8.encode(salt),
-    iterations: 1000,
-    keyLength: length,
-  );
-  return Uint8List.fromList(key);
+List<int> deriveKey(String password) {
+  final passBytes = utf8.encode(password);
+  final digest = sha256.convert(passBytes).bytes;
+  return digest;
 }
 
 List<int> pbkdf2({

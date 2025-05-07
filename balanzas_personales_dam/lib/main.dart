@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'screens/welcome_screen.dart';
-import 'screens/login_screen.dart';
+import 'package:flutter/services.dart';
+//import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   await initializeDateFormatting('es_ES', null);
-  
   //final prefs = await SharedPreferences.getInstance();
   //await prefs.clear();
   

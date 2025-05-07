@@ -20,10 +20,12 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   String _filterType = 'Todo';
   String _sortOrder = 'Reciente';
+  String _username = '';
 
   @override
   void initState() {
     super.initState();
+    _loadUsername();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadTransactions();
     });
@@ -147,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (encryptedData == null) return;
 
     try {
-      final decryptedBytes =xorEncrypt(base64Decode(encryptedData), key);
+      final decryptedBytes = xorEncrypt(base64Decode(encryptedData), key);
       final List<dynamic> stringList = jsonDecode(utf8.decode(decryptedBytes));
 
       setState(() {
@@ -169,7 +171,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
+  Future<void> _loadUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('username') ?? '';
+    setState(() {
+      _username = name;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -194,9 +202,9 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 40),
-          const Center(
+          Center(
             child: Text(
-              'Finanzas de ROSA',
+              'Finanzas de ${_username.isNotEmpty ? _username : 'Usuario'}',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),

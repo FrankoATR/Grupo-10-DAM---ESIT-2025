@@ -5,6 +5,7 @@ import '../widgets/custom_bottom_nav_bar.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
   final List<Transaction> transactions;
@@ -19,6 +20,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _filterType = 'Todo';
   String _sortOrder = 'Reciente';
   int _currentIndex = 1;
+  String _username = '';
 
   List<Transaction> get _filteredTransactions {
     final now = DateTime.now();
@@ -38,6 +40,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 : a.date.compareTo(b.date),
       );
   }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
 
   List<MapEntry<DateTime, double>> get _groupedDailyTotals {
     final Map<DateTime, double> dailyTotals = {};
@@ -70,6 +79,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       .where((tx) => !tx.isIncome)
       .fold(0, (max, tx) => tx.amount > max ? tx.amount : max);
 
+
+  Future<void> _loadUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('username') ?? '';
+    setState(() {
+      _username = name;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,9 +96,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 40),
-          const Center(
+          Center(
             child: Text(
-              'Finanzas de ROSA',
+              'Finanzas de ${_username.isNotEmpty ? _username : 'Usuario'}',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
