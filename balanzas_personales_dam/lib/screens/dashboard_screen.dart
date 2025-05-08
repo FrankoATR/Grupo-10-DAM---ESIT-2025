@@ -320,17 +320,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
               alignment: WrapAlignment.center,
               children: [
                 _StatCard(
-                  label: "Beneficio",
+                  label: "Flujo neto",
                   value: _netTotal,
                   color: Color(0xFF2C14DD),
                 ),
                 _StatCard(
-                  label: "Mayor ingreso",
+                  label: "Mayor entrada",
                   value: _maxIncome,
                   color: Color(0xFF2C14DD),
                 ),
                 _StatCard(
-                  label: "Mayor perdida",
+                  label: "Mayor salida",
                   value: _maxLoss,
                   color: Color(0xFFFF2D55),
                 ),
