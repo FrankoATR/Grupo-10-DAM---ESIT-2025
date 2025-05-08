@@ -29,7 +29,7 @@ class _TransactionFormState extends State<TransactionForm> {
     if (widget.existingTransaction != null) {
       _titleController.text = widget.existingTransaction!.title;
       _categoryController.text = widget.existingTransaction!.category;
-      _amountController.text = widget.existingTransaction!.amount.toString();
+      _amountController.text = widget.existingTransaction!.isIncome ? widget.existingTransaction!.amount.toString() : (widget.existingTransaction!.amount * -1).toString();
       _selectedDate = widget.existingTransaction!.date;
     }
   }
@@ -67,7 +67,7 @@ class _TransactionFormState extends State<TransactionForm> {
       id: widget.existingTransaction?.id ?? DateTime.now().toString(),
       title: enteredTitle,
       category: enteredCategory,
-      amount: enteredAmount,
+      amount: enteredAmount.abs(),
       isIncome: isIncome,
       date: _selectedDate,
     );
